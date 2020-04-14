@@ -1,5 +1,5 @@
 
-# Homework 7: COVID-19 Cross-Platform Application
+# Homework 7: COVID-19 Cross-Platform Application (Instructions for my reference)
 
 ## Homework Goals
 * Use CODVID-19 API (Documentation using postman) to build mobile application that displays:
@@ -20,3 +20,11 @@
 4. On separate branch, exercise [CODVID-19 API](https://covid19api.com/) and display the data in your application as text. Be fancy and style your results. (due April 17)
 5. Overlay the data on the maps (due April 24)
 
+# Application Documentation:
+1. Started with testing on ios using Google maps.
+
+
+
+Created two custom map styles for the app, will eventually be able to see country by country data as well as province by province.
+3. Going to use react-native-geocoding api to extract the country in which the user taps, will lead to a rendered callout with COVID information.
+4. Once this is complete, will add ability to navigate between three kinds of maps
