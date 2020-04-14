@@ -4,7 +4,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import {Callout} from 'react-native-maps'
 import Geocoder from 'react-native-geocoding'
 
-Geocoder.init('AIzaSyB18RorpIkOIeqtKe_a3E8Qd8Dsq6UYno8');
+Geocoder.init('');
 
 Geocoder.from("United States").then(json => {
   var location = json.results[0].geometry.location;
