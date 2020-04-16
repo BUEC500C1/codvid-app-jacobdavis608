@@ -8,15 +8,13 @@ import { Marker } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 //import Animated from 'react-native-reanimated';
 
-const countries = require("./country_locations.json");
+const api_country_names = require("./covid_api_country_names.json");
 
+Geocoder.init('AIzaSyD2nHx5sWkF1SnCq5fJSGbo3uNXmRFZL_0');
 
-//Geocoder.init('');
-
-/* Geocoder.from("United States").then(json => {
+Geocoder.from("United States").then(json => {
   var location = json.results[0].geometry.location;
-  console.log(location);
-}).catch(error => console.warn(error));*/
+}).catch(error => console.warn(error));
 
 const homeBackground = { uri : "https://media.apnarm.net.au/media/images/2020/03/14/v3imagesbin33da6b497a420ebd3f8906c6d09f44d1-tayrc2vjat0f2p1uzt2_t1880.jpg" };
 
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   marker: {
-    backgroundColor: "#032c47",
+    backgroundColor: 'rgba(3,44,71, 0.9)',
     padding: 5,
     borderRadius: 5
   },
@@ -81,12 +79,98 @@ class WorldMap extends Component{
       },
       markers: [
 
-      ]
+      ],
+      loadingCovidData: true,
+      country: "",
+      stats: {
+        date: "",
+        confirmed: 0,
+        deaths: 0,
+        recovered: 0
+      }
     }
     this.handlePress = this.handlePress.bind(this)
   }
 
+  getCovidData(){
+    var api_url = `https://api.covid19api.com/total/country/${api_country_names[this.state.country]}`;
+    fetch(api_url)
+        .then((res) => res.json())
+        .then((resJson) => {
+          if (resJson.length < 1 || resJson[resJson.length-1] == undefined){ //no data returned
+            this.setState({
+              loadingCovidData: false,
+              stats: {
+                date: "No data available",
+                confirmed: 0,
+                deaths: 0,
+                recovered: 0
+              }
+            });
+          }
+          else {
+            this.setState({
+              loadingCovidData: false,
+              stats: {
+                date: resJson[resJson.length-1]["Date"],
+                confirmed: resJson[resJson.length-1]["Confirmed"],
+                deaths: resJson[resJson.length-1]["Deaths"],
+                recovered: resJson[resJson.length-1]["Recovered"]
+              }
+            }).then();
+          } 
+    }).catch((error)=>console.log(error) );
+  }
+
+  renderCovidData() {
+    var data_style = {
+      fontStyle: 'italic',
+      color:"#01f5ff"
+    }
+
+
+    if (this.state.country == "" && !this.state.loadingCovidData){ //no country there
+      return (<Text style={data_style}>No Data</Text>)
+    }
+    else if (this.state.loadingCovidData && this.state.country == ""){
+      return (<Text style={data_style}>No Data</Text>)
+    }
+    else if (this.state.loadingCovidData){ //country there but waiting for data
+      return (
+        <View>  
+          <Text style={{color:"#01f5ff", fontWeight: "bold", fontSize:18}}>
+                {this.state.country}
+          </Text>
+          <Text style={data_style}>Loading...</Text>
+        </View>
+      )
+    }
+    else{ //received data
+      return(
+        <View>
+          <Text style={{color:"#01f5ff", fontWeight: "bold", fontSize:18}}>
+                {this.state.country}
+          </Text>
+          <Text style={data_style}>
+          Date: {this.state.stats.date}
+          </Text>
+          <Text style={data_style}>
+            Confirmed: {this.state.stats.confirmed}
+          </Text>
+          <Text style={data_style}>
+            Deaths: {this.state.stats.deaths}
+          </Text>
+          <Text style={data_style}>
+            Recovered: {this.state.stats.recovered}
+          </Text>
+        </View>
+      );
+    }
+  }
+
+
   handlePress(e){
+    //get the full address of the click
     this.setState({
       markers: [
         {
@@ -95,7 +179,35 @@ class WorldMap extends Component{
         },
       ],
     });
-    console.log(this.state);
+
+    // identify the pressed country and display stats
+    Geocoder.from(e.nativeEvent.coordinate).then(json => {
+      var res = json.results;
+      var address = json.results[0].address_components;
+      var c = "";
+      var i;
+      for (i = 0; i < address.length; i++){
+        var j;
+        for (j = 0; j < address[i].types.length; j++){
+          if(address[i].types[j] == "country"){
+            c = address[i].long_name
+            break;
+          }
+        }
+      }
+      this.setState({
+        country: c, 
+        loadingCovidData: true
+      }, () => this.getCovidData());
+    }).catch(error => {
+        this.setState({
+          country: "",
+          loadingCovidData: true,
+          markers: []
+        });
+      }
+    ).done();
+    return;
   }
 
   render() {
@@ -116,7 +228,7 @@ class WorldMap extends Component{
             coordinate={marker.coordinate}
           >
             <View style={styles.marker}>
-              <Text style={{color:"#01f5ff"}}>Country</Text>
+              {this.renderCovidData()}
             </View>
           </Marker>
       ))}

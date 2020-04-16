@@ -9,6 +9,11 @@ import requests
 from time import sleep
 import json
 
+
+def get_geocoding_countries():
+
+
+
 def get_lat_and_lon():
     r = requests.get("https://api.covid19api.com/countries")
     if (r.status_code == 200):
@@ -17,6 +22,9 @@ def get_lat_and_lon():
         for country in r.json():
             country_slugs[country['Country']] = country['Slug']
 
+    with open("api_country_names.json", 'w') as fp:
+        json.dump(country_slugs, fp)
+    '''
     # for each country, request some covid data that include longitude
     # and latitude for the country, store it in json
     country_locations = {}
@@ -43,6 +51,7 @@ def get_lat_and_lon():
             
     with open("country_locations.json", 'w') as fp:
         json.dump(country_locations, fp)
+    '''
 
 if __name__ == "__main__":
     get_lat_and_lon()
