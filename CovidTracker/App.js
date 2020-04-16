@@ -10,7 +10,7 @@ import Geocoder from 'react-native-geocoding';
 
 const api_country_names = require("./covid_api_country_names.json");
 
-Geocoder.init('AIzaSyD2nHx5sWkF1SnCq5fJSGbo3uNXmRFZL_0');
+Geocoder.init('');
 
 Geocoder.from("United States").then(json => {
   var location = json.results[0].geometry.location;
