@@ -54,24 +54,10 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   marker: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "rgba(130,4,150, 0.9)",
+    backgroundColor: "#032c47",
+    padding: 5,
+    borderRadius: 5
   },
-  ring: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "rgba(130,4,150, 0.3)",
-    position: "absolute",
-    borderWidth: 1,
-    borderColor: "rgba(130,4,150, 0.5)",
-  },
-  markerWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-  }
 });
 
 const bostonRegion = {
@@ -129,10 +115,9 @@ class WorldMap extends Component{
             key={marker.key}
             coordinate={marker.coordinate}
           >
-              <Animated.View style={[styles.markerWrap]}>
-                <Animated.View style={[styles.ring]}/>
-                <View style={styles.marker}/>
-              </Animated.View>
+            <View style={styles.marker}>
+              <Text style={{color:"#01f5ff"}}>Country</Text>
+            </View>
           </Marker>
       ))}
       </MapView>
