@@ -130,10 +130,10 @@ class WorldMap extends Component{
 
 
     if (this.state.country == "" && !this.state.loadingCovidData){ //no country there
-      return (<Text style={data_style}>No Data</Text>)
+      return (<Text style={data_style}>Please select a country</Text>)
     }
     else if (this.state.loadingCovidData && this.state.country == ""){
-      return (<Text style={data_style}>No Data</Text>)
+      return (<Text style={data_style}>Please select a country</Text>)
     }
     else if (this.state.loadingCovidData){ //country there but waiting for data
       return (
