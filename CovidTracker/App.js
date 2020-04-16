@@ -1,11 +1,15 @@
 import 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, Dimensions, ImageBackground} from 'react-native';
+import { StyleSheet, Text, View, Animated, ImageBackground} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import {Callout} from 'react-native-maps'
-import Geocoder from 'react-native-geocoding'
+import { Marker } from 'react-native-maps';
+import Geocoder from 'react-native-geocoding';
+//import Animated from 'react-native-reanimated';
+
+const countries = require("./country_locations.json");
+
 
 //Geocoder.init('');
 
@@ -48,25 +52,92 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: "contain",
     justifyContent: "center"
+  },
+  marker: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(130,4,150, 0.9)",
+  },
+  ring: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(130,4,150, 0.3)",
+    position: "absolute",
+    borderWidth: 1,
+    borderColor: "rgba(130,4,150, 0.5)",
+  },
+  markerWrap: {
+    alignItems: "center",
+    justifyContent: "center",
   }
 });
 
-function WorldMap(){
-  return (
-    <MapView
-      style = {{ flex: 1 }}
-      provider= { PROVIDER_GOOGLE }
-      showsUserLocation
-      initialRegion={{
-        latitude: 42.3505,
-        longitude: -71.1054,
-        latitudeDelta: 30.0,
-        longitudeDelta: 35.0}}
-      customMapStyle={countriesStyle}
-      zoomControlEnabled={true}
-      zoomEnabled={true}
-    />
-  );
+const bostonRegion = {
+  latitude: 37.0902,
+  longitude: -98.7129,
+  latitudeDelta: 40.0,
+  longitudeDelta: 55.0
+};
+
+let id = 0;
+
+class WorldMap extends Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      region: {
+        latitude: 37.0902,
+        longitude: -98.7129,
+        latitudeDelta: 40.0,
+        longitudeDelta: 55.0
+      },
+      markers: [
+
+      ]
+    }
+    this.handlePress = this.handlePress.bind(this)
+  }
+
+  handlePress(e){
+    this.setState({
+      markers: [
+        {
+          coordinate: e.nativeEvent.coordinate,
+          key: id++,
+        },
+      ],
+    });
+    console.log(this.state);
+  }
+
+  render() {
+    return (
+      <MapView
+        style = {{ flex: 1 }}
+        provider= { PROVIDER_GOOGLE }
+        showsUserLocation
+        initialRegion={bostonRegion}
+        onLongPress={this.handlePress}
+        customMapStyle={countriesStyle}
+        zoomControlEnabled={true}
+        zoomEnabled={true}
+      >
+      {this.state.markers.map(marker => (
+          <Marker
+            key={marker.key}
+            coordinate={marker.coordinate}
+          >
+              <Animated.View style={[styles.markerWrap]}>
+                <Animated.View style={[styles.ring]}/>
+                <View style={styles.marker}/>
+              </Animated.View>
+          </Marker>
+      ))}
+      </MapView>
+    );
+  }
 }
 
 function HomeScreen(){
@@ -89,22 +160,21 @@ Tab = createBottomTabNavigator();
 
 const tabStyle = {
   activeTintColor: "#01f5ff",
-  activeBackgroundColor: "#032c47",
-  inactiveBackgroundColor: "#032c47",
   labelStyle: styles.labelText,
 }
 
+const navTheme = {
+  colors: {
+    card: '#032c47',
+    border: '#032c47',
+  },
+};
+
 export default class App extends Component {
-    constructor(props){
-      super(props);
-      this.state={
-        
-      }      
-    }
     
     render(){
       return(
-        <NavigationContainer>
+        <NavigationContainer theme={navTheme}>
           <Tab.Navigator initialRouteName="Home" tabBarOptions={tabStyle} >
             <Tab.Screen name="Home" component={HomeScreen}/>
             <Tab.Screen name="World" component={WorldMap}/>

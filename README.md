@@ -21,10 +21,14 @@
 5. Overlay the data on the maps (due April 24)
 
 # Application Documentation:
-1. Started with testing on ios using Google maps.
+## Home Screen
+Displays simple landing screen and instructs user to navigate to the World tab to look at statistics (will add more tabs later)
 
-
+## World
+Displays world COVID-19 statistics.
 
 Created two custom map styles for the app, will eventually be able to see country by country data as well as province by province.
-3. Going to use react-native-geocoding api to extract the country in which the user taps, will lead to a rendered callout with COVID information.
-4. Once this is complete, will add ability to navigate between three kinds of maps
+
+Going to use react-native-geocoding api to extract the country in which the user taps, will lead to a rendered callout with COVID information.
+
+Once this is complete, will add ability to navigate between three kinds of maps
