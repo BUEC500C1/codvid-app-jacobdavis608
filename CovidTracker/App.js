@@ -1,10 +1,11 @@
 import 'react-native-gesture-handler';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, Animated, ImageBackground} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ImageBackground} from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Marker } from 'react-native-maps';
+import { Callout } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 //import Animated from 'react-native-reanimated';
 
@@ -23,6 +24,7 @@ const countriesStyle = require('./mapstyles/countriesStyle.json');
 const styles = StyleSheet.create({
   container: {
       flex: 1,
+      flexDirection: 'row',
       justifyContent: "center"
   },
   titleText: {
@@ -56,6 +58,23 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5
   },
+  calloutView: {
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "rgba(3, 44, 71, 0.9)",
+    borderRadius: 5,
+    width: "70%",
+    marginLeft: "10%",
+    marginRight: "10%",
+    marginTop: 40
+  },
+  calloutText: {
+    textAlign: 'center',
+    fontSize: 20,
+    justifyContent: 'center',
+    color: "#01f5ff",
+    fontWeight: 'bold'
+  }
 });
 
 const bostonRegion = {
@@ -82,8 +101,13 @@ class WorldMap extends Component{
       ],
       loadingCovidData: true,
       country: "",
-      stats: {
+      curr_stats: {
         date: "",
+        confirmed: 0,
+        deaths: 0,
+        recovered: 0
+      },
+      world_stats: {
         confirmed: 0,
         deaths: 0,
         recovered: 0
@@ -92,7 +116,35 @@ class WorldMap extends Component{
     this.handlePress = this.handlePress.bind(this)
   }
 
-  getCovidData(){
+  componentDidMount(){ //Display the world totals at the top when the component mounts
+    var api_url = "https://api.covid19api.com/world/total"
+    fetch(api_url)
+        .then((res) => res.json())
+        .then((resJson) => {
+          if (resJson.length < 1 || resJson[resJson.length-1] == undefined){ //no data available
+           this.setState({
+             world_stats: {
+               confirmed: resJson["TotalConfirmed"],
+               deaths: resJson["TotalDeaths"],
+               recovered: resJson["TotalRecovered"]
+             }
+           });
+          }
+          else {
+            this.setState({
+              world_stats: {
+                confirmed: "(No data available)",
+                deaths: "(No data available)",
+                recovered: "(No data available)"
+              }
+            })
+          }
+          console.log(resJson["TotalConfirmed"])
+        }).catch((error)=>console.log(error) );
+  }
+
+
+  getCovidCountryData(){
     var api_url = `https://api.covid19api.com/total/country/${api_country_names[this.state.country]}`;
     fetch(api_url)
         .then((res) => res.json())
@@ -100,7 +152,7 @@ class WorldMap extends Component{
           if (resJson.length < 1 || resJson[resJson.length-1] == undefined){ //no data returned
             this.setState({
               loadingCovidData: false,
-              stats: {
+              curr_stats: {
                 date: "No data available",
                 confirmed: 0,
                 deaths: 0,
@@ -111,7 +163,7 @@ class WorldMap extends Component{
           else {
             this.setState({
               loadingCovidData: false,
-              stats: {
+              curr_stats: {
                 date: resJson[resJson.length-1]["Date"],
                 confirmed: resJson[resJson.length-1]["Confirmed"],
                 deaths: resJson[resJson.length-1]["Deaths"],
@@ -122,12 +174,11 @@ class WorldMap extends Component{
     }).catch((error)=>console.log(error) );
   }
 
-  renderCovidData() {
+  renderCovidCountryData() {
     var data_style = {
       fontStyle: 'italic',
       color:"#01f5ff"
     }
-
 
     if (this.state.country == "" && !this.state.loadingCovidData){ //no country there
       return (<Text style={data_style}>Please select a country</Text>)
@@ -152,22 +203,29 @@ class WorldMap extends Component{
                 {this.state.country}
           </Text>
           <Text style={data_style}>
-          Date: {this.state.stats.date}
+          Date: {this.state.curr_stats.date}
           </Text>
           <Text style={data_style}>
-            Confirmed: {this.state.stats.confirmed}
+            Confirmed: {this.state.curr_stats.confirmed}
           </Text>
           <Text style={data_style}>
-            Deaths: {this.state.stats.deaths}
+            Deaths: {this.state.curr_stats.deaths}
           </Text>
           <Text style={data_style}>
-            Recovered: {this.state.stats.recovered}
+            Recovered: {this.state.curr_stats.recovered}
           </Text>
         </View>
       );
     }
   }
 
+  renderCovidWorldTotal(){
+    return(
+      <Text>
+        Confirmed: {this.state.world_stats.confirmed}, Deaths: {this.state.world_stats.deaths}, Recovered: {this.state.world_stats.recovered}
+      </Text>
+    );
+  }
 
   handlePress(e){
     //get the full address of the click
@@ -180,7 +238,7 @@ class WorldMap extends Component{
       ],
     });
 
-    // identify the pressed country and display stats
+    // identify the pressed country and display curr_stats
     Geocoder.from(e.nativeEvent.coordinate).then(json => {
       var res = json.results;
       var address = json.results[0].address_components;
@@ -198,7 +256,7 @@ class WorldMap extends Component{
       this.setState({
         country: c, 
         loadingCovidData: true
-      }, () => this.getCovidData());
+      }, () => this.getCovidCountryData());
     }).catch(error => {
         this.setState({
           country: "",
@@ -212,27 +270,39 @@ class WorldMap extends Component{
 
   render() {
     return (
-      <MapView
-        style = {{ flex: 1 }}
-        provider= { PROVIDER_GOOGLE }
-        showsUserLocation
-        initialRegion={bostonRegion}
-        onLongPress={this.handlePress}
-        customMapStyle={countriesStyle}
-        zoomControlEnabled={true}
-        zoomEnabled={true}
-      >
-      {this.state.markers.map(marker => (
-          <Marker
-            key={marker.key}
-            coordinate={marker.coordinate}
+        <View style={styles.container}>
+          <MapView
+          style = {{ flex: 1 }}
+          provider= { PROVIDER_GOOGLE }
+          showsUserLocation
+          initialRegion={bostonRegion}
+          onLongPress={this.handlePress}
+          customMapStyle={countriesStyle}
+          zoomControlEnabled={true}
+          zoomEnabled={true}
           >
-            <View style={styles.marker}>
-              {this.renderCovidData()}
+          {this.state.markers.map(marker => (
+              <Marker
+                key={marker.key}
+                coordinate={marker.coordinate}
+              >
+                <View style={styles.marker}>
+                  {this.renderCovidCountryData()}
+                </View>
+              </Marker>
+          ))}
+        </MapView>
+          <Callout style={styles.calloutView}>
+            <View>
+              <Text style={styles.calloutText}>
+                COVID-19 World Totals:
+              </Text>
+              <Text style={styles.text}>
+                {this.renderCovidWorldTotal()}
+              </Text>
             </View>
-          </Marker>
-      ))}
-      </MapView>
+          </Callout>
+        </View>
     );
   }
 }
@@ -248,10 +318,21 @@ function HomeScreen(){
           Keep up with the latest Johns Hopkins University COVID-19 statistics by navigating to the World Tab
         </Text>
       </ImageBackground>
-      
+
     </View>
   );
 }
+
+function Local(){
+  return(
+    <View style={styles.homeView}>
+      <Text>
+        Local Data
+      </Text>
+    </View>
+  );
+}
+
 
 Tab = createBottomTabNavigator();
 
@@ -275,6 +356,7 @@ export default class App extends Component {
           <Tab.Navigator initialRouteName="Home" tabBarOptions={tabStyle} >
             <Tab.Screen name="Home" component={HomeScreen}/>
             <Tab.Screen name="World" component={WorldMap}/>
+            <Tab.Screen name="Local" component={Local}/>
           </Tab.Navigator>
         </NavigationContainer>
       );
