@@ -7,7 +7,8 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Marker } from 'react-native-maps';
 import { Callout } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
-//import Animated from 'react-native-reanimated';
+
+import LocalMap from './components/Local'
 
 const api_country_names = require("./covid_api_country_names.json");
 
@@ -143,7 +144,6 @@ class WorldMap extends Component{
         }).catch((error)=>console.log(error) );
   }
 
-
   getCovidCountryData(){
     var api_url = `https://api.covid19api.com/total/country/${api_country_names[this.state.country]}`;
     fetch(api_url)
@@ -229,6 +229,7 @@ class WorldMap extends Component{
 
   handlePress(e){
     //get the full address of the click
+    console.log(e.nativeEvent.coordinate);
     this.setState({
       markers: [
         {
@@ -274,7 +275,6 @@ class WorldMap extends Component{
           <MapView
           style = {{ flex: 1 }}
           provider= { PROVIDER_GOOGLE }
-          showsUserLocation
           initialRegion={bostonRegion}
           onLongPress={this.handlePress}
           customMapStyle={countriesStyle}
@@ -323,16 +323,6 @@ function HomeScreen(){
   );
 }
 
-function Local(){
-  return(
-    <View style={styles.homeView}>
-      <Text>
-        Local Data
-      </Text>
-    </View>
-  );
-}
-
 
 Tab = createBottomTabNavigator();
 
@@ -356,7 +346,7 @@ export default class App extends Component {
           <Tab.Navigator initialRouteName="Home" tabBarOptions={tabStyle} >
             <Tab.Screen name="Home" component={HomeScreen}/>
             <Tab.Screen name="World" component={WorldMap}/>
-            <Tab.Screen name="Local" component={Local}/>
+            <Tab.Screen name="Local" component={LocalMap}/>
           </Tab.Navigator>
         </NavigationContainer>
       );

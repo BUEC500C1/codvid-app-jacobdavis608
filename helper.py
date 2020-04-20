@@ -9,11 +9,6 @@ import requests
 from time import sleep
 import json
 
-
-def get_geocoding_countries():
-
-
-
 def get_lat_and_lon():
     r = requests.get("https://api.covid19api.com/countries")
     if (r.status_code == 200):
