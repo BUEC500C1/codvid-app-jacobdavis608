@@ -14,10 +14,6 @@ const api_country_names = require("./covid_api_country_names.json");
 
 Geocoder.init('');
 
-Geocoder.from("United States").then(json => {
-  var location = json.results[0].geometry.location;
-}).catch(error => console.warn(error));
-
 const homeBackground = { uri : "https://media.apnarm.net.au/media/images/2020/03/14/v3imagesbin33da6b497a420ebd3f8906c6d09f44d1-tayrc2vjat0f2p1uzt2_t1880.jpg" };
 
 const countriesStyle = require('./mapstyles/countriesStyle.json');

@@ -10,6 +10,8 @@ const api_country_names = require('../covid_api_country_names.json');
 
 const provincesStyle = require('../mapstyles/provincesStyle.json');
 
+Geocoder.init('');
+
 const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -76,14 +78,20 @@ export default class LocalMap extends Component {
         loadingCovidData: true,
         country: "",
         selectedMarker: -1, 
+        country_stats: {
+          confirmed: 0,
+          deaths: 0,
+          recovered: 0,
+          valid: 0
+        }
       }
-      this.updateProvinceMarkers = this.updateProvinceMarkers.bind(this);
+      this.setCurrentCountryStats = this.setCurrentCountryStats.bind(this);
       this.printState = this.printState.bind(this);
     }
 
     getDate(e){
       var date = new Date();
-      date.setDate(date.getDate() - 1);
+      date.setDate(date.getDate() - 1); //api get yesterday's data
       var first_half_date = format(date, "yyyy-MM-dd")
       var second_half_date = format(date, "HH:mm:ss")
       var formatted_date = `${first_half_date}T00:00:00Z` 
@@ -179,6 +187,108 @@ export default class LocalMap extends Component {
       this.setState({selectedMarker: m.key})
     }
 
+
+
+
+    componentDidMount(){
+      navigator.geolocation.getCurrentPosition((position) => {
+        var lat = parseFloat(position.coords.latitude);
+        var lon = parseFloat(position.coords.longitude);
+
+        var coordinate = {
+          latitude: lat,
+          longitude: lon
+        };
+
+        this.setState({
+          region: {
+            latitude: lat,
+            longitude: lon,
+            latitudeDelta: 5,
+            longitudeDelta: 5
+          }
+        });
+        
+        Geocoder.from(coordinate).then(json => {
+          var address = json.results[0].address_components;
+          var c = "";
+          var i;
+          for (i = 0; i < address.length; i++){
+            var j;
+            for (j = 0; j < address[i].types.length; j++){
+              if(address[i].types[j] == "country"){
+                c = address[i].long_name
+                break;
+              }
+            }
+          }
+          this.setState({
+            country: c, 
+            loadingCovidData: true
+          }, () => this.setCurrentCountryStats());
+        }).catch(error => console.log(error)
+        ).done();
+        return;
+      });
+    }
+
+
+    renderCountryStats(){
+      if (this.state.country_stats.valid == 0){ //if no valid country stats
+        return(
+          <Text style={styles.text}>
+            Country data unavailable
+          </Text>
+        );
+      }
+      else {
+        return(
+          <View>
+            <Text style={styles.text}>
+              Confirmed: {this.state.country_stats.confirmed}
+            </Text>
+            <Text style={styles.text}>
+              Deaths: {this.state.country_stats.deaths}
+            </Text>
+            <Text style={styles.text}>
+              Recovered: {this.state.country_stats.recovered}
+            </Text>
+          </View>
+          
+        );
+      }
+    }
+    
+    setCurrentCountryStats(){
+      var api_url = `https://api.covid19api.com/total/country/${api_country_names[this.state.country]}`;
+      fetch(api_url)
+          .then((res) => res.json())
+          .then((resJson) => {
+            console.log(resJson);
+            if (resJson.length < 1 || resJson[resJson.length-1] == undefined){ //no data returned
+              this.setState({
+                country_stats: {
+                  confirmed: 0,
+                  deaths: 0,
+                  recovered: 0,
+                  valid: 0
+                }
+              });
+            }
+            else {
+              this.setState({
+                loadingCovidData: false,
+                curr_stats: {
+                  confirmed: resJson[resJson.length-1]["Confirmed"],
+                  deaths: resJson[resJson.length-1]["Deaths"],
+                  recovered: resJson[resJson.length-1]["Recovered"],
+                  valid: 1
+                }
+              }).then();
+            }
+      }).catch((error)=>console.log(error) );
+    }
+
     render(){
       return(
         <View style={styles.container}>
@@ -187,27 +297,20 @@ export default class LocalMap extends Component {
           provider= { PROVIDER_GOOGLE }
           showsUserLocation
           initialRegion={this.state.region}
+          region={this.state.region}
           customMapStyle={provincesStyle}
           zoomControlEnabled={true}
           zoomEnabled={true}
-          > 
-            {this.state.markers.map(marker => (
-              <Marker key={marker.key} 
-                coordinate={marker.coordinate}
-              >
-              <View style={styles.marker}>
-                <Text>{marker.state_name}</Text>
-              </View>
-              </Marker>
-            ))}
-          </MapView>
+          /> 
           <Callout style={styles.calloutView}>
             <View>
-              <TextInput style={styles.calloutSearch}
-                placeholder={"Enter a country name..."}
-                placeholderTextColor="#00b0b8"
-                onSubmitEditing={e => this.updateProvinceMarkers(e)}
-              />
+              <Text style={styles.calloutText}>
+                Your country data:
+              </Text>
+              <Text style={styles.calloutText}>
+                {this.state.country}
+              </Text>
+              {this.renderCountryStats()}
             </View>
           </Callout>
         </View>
@@ -219,6 +322,12 @@ export default class LocalMap extends Component {
 
 
 
-/*
-
-          ))}*/
+/*{this.state.markers.map(marker => (
+              <Marker key={marker.key} 
+                coordinate={marker.coordinate}
+              >
+              <View style={styles.marker}>
+                <Text>{marker.state_name}</Text>
+              </View>
+              </Marker>
+            ))}*/
