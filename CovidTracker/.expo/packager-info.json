@@ -1,10 +1,10 @@
 {
   "devToolsPort": 19002,
-  "expoServerPort": 19000,
-  "packagerPort": 19001,
-  "packagerPid": 12580,
-  "expoServerNgrokUrl": "https://fy-upx.anonymous.covidtracker.exp.direct",
-  "packagerNgrokUrl": "https://packager.fy-upx.anonymous.covidtracker.exp.direct",
-  "ngrokPid": 12590,
+  "expoServerPort": null,
+  "packagerPort": null,
+  "packagerPid": null,
+  "expoServerNgrokUrl": null,
+  "packagerNgrokUrl": null,
+  "ngrokPid": null,
   "webpackServerPort": null
 }
