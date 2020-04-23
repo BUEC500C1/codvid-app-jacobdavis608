@@ -12,7 +12,7 @@ import CountryMap from './components/Country'
 
 const api_country_names = require("./covid_api_country_names.json");
 
-Geocoder.init('AIzaSyCO88yA5GKJDzavK8QeDZkyu3qqTfkd_18');
+Geocoder.init('');
 
 const homeBackground = { uri : "https://media.apnarm.net.au/media/images/2020/03/14/v3imagesbin33da6b497a420ebd3f8906c6d09f44d1-tayrc2vjat0f2p1uzt2_t1880.jpg" };
 

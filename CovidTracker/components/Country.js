@@ -10,7 +10,7 @@ const api_country_names = require('../covid_api_country_names.json');
 
 const provincesStyle = require('../mapstyles/provincesStyle.json');
 
-Geocoder.init('AIzaSyCO88yA5GKJDzavK8QeDZkyu3qqTfkd_18');
+Geocoder.init('');
 
 const styles = StyleSheet.create({
     container: {
