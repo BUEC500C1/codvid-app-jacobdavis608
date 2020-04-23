@@ -8,11 +8,11 @@ import { Marker } from 'react-native-maps';
 import { Callout } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 
-import LocalMap from './components/Local'
+import CountryMap from './components/Country'
 
 const api_country_names = require("./covid_api_country_names.json");
 
-Geocoder.init('');
+Geocoder.init('AIzaSyCO88yA5GKJDzavK8QeDZkyu3qqTfkd_18');
 
 const homeBackground = { uri : "https://media.apnarm.net.au/media/images/2020/03/14/v3imagesbin33da6b497a420ebd3f8906c6d09f44d1-tayrc2vjat0f2p1uzt2_t1880.jpg" };
 
@@ -217,15 +217,23 @@ class WorldMap extends Component{
 
   renderCovidWorldTotal(){
     return(
-      <Text>
-        Confirmed: {this.state.world_stats.confirmed}, Deaths: {this.state.world_stats.deaths}, Recovered: {this.state.world_stats.recovered}
-      </Text>
+      <View >
+        <Text style={styles.text}>
+        Confirmed: {this.state.world_stats.confirmed}
+        </Text>
+        <Text style={styles.text}>
+          Deaths: {this.state.world_stats.deaths}
+        </Text>
+        <Text style={styles.text}>
+          Recovered: {this.state.world_stats.recovered}
+        </Text>
+      </View>
     );
   }
 
   handlePress(e){
     //get the full address of the click
-    console.log(e.nativeEvent.coordinate);
+    
     this.setState({
       markers: [
         {
@@ -291,11 +299,9 @@ class WorldMap extends Component{
           <Callout style={styles.calloutView}>
             <View>
               <Text style={styles.calloutText}>
-                COVID-19 World Totals:
+                COVID-19 World Totals
               </Text>
-              <Text style={styles.text}>
                 {this.renderCovidWorldTotal()}
-              </Text>
             </View>
           </Callout>
         </View>
@@ -342,7 +348,7 @@ export default class App extends Component {
           <Tab.Navigator initialRouteName="Home" tabBarOptions={tabStyle} >
             <Tab.Screen name="Home" component={HomeScreen}/>
             <Tab.Screen name="World" component={WorldMap}/>
-            <Tab.Screen name="Local" component={LocalMap}/>
+            <Tab.Screen name="Country" component={CountryMap}/>
           </Tab.Navigator>
         </NavigationContainer>
       );
